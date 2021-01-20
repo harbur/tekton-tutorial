@@ -1,0 +1,41 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: build-and-deploy
+spec:
+  params:
+    - name: contextDir
+      description: the context directory from where to build the application
+    - name: namespace
+      description: the namespace where to deploy the resources
+  resources:
+    - name: appSource
+      type: git
+    - name: appImage
+      type: image
+  tasks:
+    - name: build-app
+      taskRef:
+        name: build
+      params:
+        - name: contextDir
+          value: $(params.contextDir)
+      resources:
+        inputs:
+          - name: source
+            resource: appSource
+        outputs:
+          - name: builtImage
+            resource: appImage
+    - name: deploy-kubernetes-service
+      taskRef:
+        name: deploy
+      runAfter:
+        - build-app
+      params:
+        - name: namespace
+          value: $(params.namespace)
+      resources:
+        inputs:
+          - name: source
+            resource: appSource

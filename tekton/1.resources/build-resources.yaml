@@ -1,0 +1,22 @@
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  name: tekton-tutorial-git
+spec:
+  type: git
+  params:
+    - name: url
+      value: https://github.com/harbur/tekton-tutorial
+    - name: revision
+      value: main
+---
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  name: tekton-tutorial-image
+spec:
+  type: image
+  params:
+    - name: url
+      # use internal registry
+      value: example.com/harbur/tekton-tutorial

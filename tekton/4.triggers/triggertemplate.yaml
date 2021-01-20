@@ -1,0 +1,46 @@
+---
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerTemplate
+metadata:
+  name: github-template
+spec:
+  params:
+    - name: gitrevision
+      description: The git revision
+      default: main
+    - name: gitrepositoryurl
+      description: The git repository url
+    - name: gitrepositoryname
+      description: The repository name
+    - name: repository
+      description: The repository full name
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1beta1
+      kind: PipelineRun
+      metadata:
+        generateName: github-run-
+        labels:
+          tekton.dev/pipeline: build-and-deploy
+      spec:
+        pipelineRef:
+          name: build-and-deploy
+        params:
+          - name: contextDir
+            value: .
+          - name: namespace
+            value: $(tt.params.gitrepositoryname)
+        resources:
+          - name: appSource
+            resourceSpec:
+              type: git
+              params:
+              - name: revision
+                value: $(tt.params.gitrevision)
+              - name: url
+                value: $(tt.params.gitrepositoryurl)
+          - name: appImage
+            resourceSpec:
+              type: image
+              params:
+              - name: url
+                value: example.com/$(tt.params.repository)

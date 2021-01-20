@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tekton-tutorial
+  labels:
+    app: tekton-tutorial
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tekton-tutorial
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: tekton-tutorial
+    spec:
+      containers:
+        - name: tekton-tutorial
+          image: example.com/harbur/tekton-tutorial

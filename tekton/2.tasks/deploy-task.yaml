@@ -1,0 +1,42 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: deploy
+spec:
+  description: deploy & restart app
+  resources:
+    inputs:
+      - name: source
+        type: git
+  params:
+    - name: pathToYamlFiles
+      description: The path to the yaml files to deploy within the git source
+      default: k8s
+    - name: namespace
+      description: The namespace where to deploy the resources
+      default: default
+    - name: pathToRolloutYaml
+      description: The path to the yaml file to perform rollout after applying resources
+      default: deploy.yaml
+  steps:
+    - name: run-kubectl
+      image: lachlanevenson/k8s-kubectl
+      workingDir: "/workspace/source/$(inputs.params.pathToYamlFiles)"
+      command: ["kubectl"]
+      args:
+        - "apply"
+        - "-n"
+        - "$(inputs.params.namespace)"
+        - "-f"
+        - "/workspace/source/$(inputs.params.pathToYamlFiles)"
+    - name: rollout-deploy
+      image: lachlanevenson/k8s-kubectl
+      workingDir: "/workspace/source/$(inputs.params.pathToYamlFiles)"
+      command: ["kubectl"]
+      args:
+        - "rollout"
+        - "restart"
+        - "-n"
+        - "$(inputs.params.namespace)"
+        - "-f"
+        - "$(inputs.params.pathToRolloutYaml)"
