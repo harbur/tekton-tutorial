@@ -57,7 +57,7 @@ kubectl apply -f tekton/1.resources/ -f tekton/2.tasks/ -f tekton/3.pipelines -f
 kubectl create namespace tekton-tutorial
 kubectl create rolebinding tekton-pipelines:default:admin \
   --clusterrole admin \
-  --namespace demo \
+  --namespace tekton-tutorial \
   --serviceaccount tekton-pipelines:default
 ```
 
