@@ -62,4 +62,3 @@ kubectl create rolebinding tekton-pipelines:default:admin \
 ```
 
 Lastly [Setup GitHub Webhook] and you're good to go. Push a change on the repository and it will trigger the `build-and-deploy` Pipeline.
-
