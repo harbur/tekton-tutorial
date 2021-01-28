@@ -1,0 +1,11 @@
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  name: tekton-tutorial-git
+spec:
+  type: git
+  params:
+    - name: url
+      value: https://github.com/harbur/tekton-tutorial
+    - name: revision
+      value: main

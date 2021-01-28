@@ -44,22 +44,60 @@ Eager to start? Skip the guide and run the following:
 
 ```sh
 # install kubernetes (with registry & registry-aliases addons)
-minikube start --memory 6144 --cpus 2  --addons registry --addons registry-aliases
+minikube start --addons registry --addons registry-aliases
+
+# create namespace for app (and grant access to tekton-pipelines)
+kubectl create namespace tekton-tutorial
+kubectl create rolebinding admin \
+  --clusterrole admin \
+  --namespace tekton-tutorial \
+  --serviceaccount default:default
 
 # install tekton (pipeline & triggers)
 kubectl apply -f https://storage.googleapis.com/tekton-releases/pipeline/previous/v0.20.1/release.yaml
 kubectl apply -f https://storage.googleapis.com/tekton-releases/triggers/previous/v0.11.1/release.yaml
 
 # install tekton resources (pipelineresources, tasks, pipelines, triggers)
-kubectl apply -f tekton/1.resources/ -f tekton/2.tasks/ -f tekton/3.pipelines -f tekton/4.triggers -n tekton-pipelines
+kubectl apply -f tekton/1.resources/ -f tekton/2.tasks/ -f tekton/3.pipelines -f tekton/4.triggers
 
-# create namespace for app (and grant access to tekton-pipelines)
-kubectl create namespace tekton-tutorial
-kubectl create rolebinding tekton-pipelines:default:admin \
-  --clusterrole admin \
-  --namespace tekton-tutorial \
-  --serviceaccount tekton-pipelines:default
+# create github secret
+export TEKTON_TUTORIAL_SECRET_TOKEN=${TEKTON_TUTORIAL_SECRET_TOKEN-$(head -c 24 /dev/random | base64)}
+kubectl create secret generic github-secret --from-literal=secretToken=$TEKTON_TUTORIAL_SECRET_TOKEN
+echo "TEKTON_TUTORIAL_SECRET_TOKEN: $TEKTON_TUTORIAL_SECRET_TOKEN"
 ```
 
-Lastly [Setup GitHub Webhook] and you're good to go. Push a change on the repository and it will trigger the `build-and-deploy` Pipeline.
+> As an added bonus after the above setup you can skip-forward to any command described on the tutorial, there no other inter-dependencies.
 
+Lastly [Setup GitHub Webhook] and you're good to go. Push a change on the repository and it will trigger the Pipeline.
+
+```sh
+# see PipelineRun progress
+❯ tkn pr list
+NAME                         STARTED         DURATION   STATUS
+github-run-7xgnp             2 minutes ago   ---        Running
+
+# see PipelineRun succeeded
+❯ tkn pr list
+NAME                         STARTED         DURATION    STATUS
+github-run-7xgnp             3 minutes ago   2 minutes   Succeeded
+
+# check tekton-tutorial service is running
+❯ kubectl get deploy,pod,svc -n tekton-tutorial
+NAME                              READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/tekton-tutorial   1/1     1            1           43s
+
+NAME                                  READY   STATUS    RESTARTS   AGE
+pod/tekton-tutorial-58f59757c-6dsbr   1/1     Running   0          43s
+
+NAME                      TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
+service/tekton-tutorial   NodePort   10.110.24.217   <none>        8080:31348/TCP   43s
+
+# open tekton-tutorial service
+❯ minikube service tekton-tutorial -n tekton-tutorial
+|-----------------|-----------------|-------------|----------------------------|
+| NAMESPACE       |      NAME       | TARGET PORT |            URL             |
+|-----------------|-----------------|-------------|----------------------------|
+| tekton-tutorial | tekton-tutorial |        8080 | http://192.168.64.55:30357 |
+|-----------------|-----------------|-------------|----------------------------|
+🎉  Opening service tekton-tutorial/tekton-tutorial in default browser...
+```

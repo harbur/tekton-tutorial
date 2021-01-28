@@ -1,0 +1,10 @@
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  name: tekton-tutorial-image
+spec:
+  type: image
+  params:
+    - name: url
+      # use internal registry
+      value: example.com/harbur/tekton-tutorial
