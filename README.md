@@ -70,6 +70,17 @@ echo "TEKTON_TUTORIAL_SECRET_TOKEN: $TEKTON_TUTORIAL_SECRET_TOKEN"
 
 Lastly [Setup GitHub Webhook] and you're good to go. Push a change on the repository and it will trigger the Pipeline.
 
+Let's change the text it responds on the `main.go`:
+
+```diff
+ func HelloServer(w http.ResponseWriter, r *http.Request) {
+-       fmt.Fprintf(w, "Hello")
++       fmt.Fprintf(w, "Hello, this is awesome!!")
+ }
+ ```
+
+and push it to the repository, then monitor the generated PipelineRun:
+
 ```sh
 # see PipelineRun progress
 ❯ tkn pr list
@@ -92,7 +103,7 @@ pod/tekton-tutorial-58f59757c-6dsbr   1/1     Running   0          43s
 NAME                      TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
 service/tekton-tutorial   NodePort   10.110.24.217   <none>        8080:31348/TCP   43s
 
-# open tekton-tutorial service
+# open tekton-tutorial service with applied changes
 ❯ minikube service tekton-tutorial -n tekton-tutorial
 |-----------------|-----------------|-------------|----------------------------|
 | NAMESPACE       |      NAME       | TARGET PORT |            URL             |
